@@ -1,40 +1,68 @@
-/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
-  Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO 
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN is set to
-  the correct LED pin independent of which board is used.
-  If you want to know what pin the on-board LED is connected to on your Arduino model, check
-  the Technical Specs of your board  at https://www.arduino.cc/en/Main/Products
-  
-  This example code is in the public domain.
-  modified 8 May 2014
-  by Scott Fitzgerald
-  
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-  
-  modified 8 Sep 2016
-  by Colby Newman
-*/
+//Código para cálculo de velocidade a partir de 
+//um tubo de pitot e um sensor MPXV7002DP para pressão diferencial
+#include <SD.h>
 
+File velocidade;
 
-// the setup function runs once when you press reset or power the board
+float V_0 = 5.0; // provide voltagem para o sensor de pressão
+float rho = 1.204; // densidade do ar
+
+// parâmetros para cálculo da média e deslocamento
+int offset = 0;
+int offset_size = 10;
+int veloc_mean_size = 20;
+int zero_span = 2;
+
+// define e calcula deslocamento
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
   Serial.begin(9600);
+  Serial.print("Initializing SD card...");
+   pinMode(10, OUTPUT);
+ 
+  if (!SD.begin(10)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
+ 
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  velocidade = SD.open("velocidade.txt", FILE_WRITE);
+
+  for (int ii=0;ii<offset_size;ii++){
+    offset += analogRead(A0)-(1023/2);
+  }
+  offset /= offset_size;
 }
 
-// the loop function runs over and over again forever
 void loop() {
-  float value = analogRead(A0)*5./1023.;
-  Serial.print(value);
-  Serial.print(" ");
-  //float a = 1.0;
-  //float b = -value;
-  //float c = -11.2;
-  //float vactual = -b/2. + sqrt(b*b - 4*a*c)/2.;
-  //Serial.print(vactual);
-  Serial.print('\n');
-  delay(100);
+  float adc_avg = 0; float veloc = 0.0;
+  
+// media algumas leituras CAD para estabilidade
+  for (int ii=0;ii<veloc_mean_size;ii++){
+    adc_avg+= analogRead(A0)-offset;
+  }
+  adc_avg/=veloc_mean_size;
+  
+  // certifica que se o CAD lê abaixo de 512, então a igualamos a uma velocidade negativa 
+  if (adc_avg>512-zero_span and adc_avg<512+zero_span){
+  } else{
+    if (adc_avg<512){
+      veloc = -sqrt((-10000.0*((adc_avg/1023.0)-0.5))/rho);
+    } else{
+      veloc = sqrt((10000.0*((adc_avg/1023.0)-0.5))/rho);
+    }
+  }
+  Serial.println("velocidade: ", veloc); // exibe velocidade 
+  // if the file opened okay, write to it:
+  if (velocidade) {
+    velocidade.println("velocidade: "veloc);
+	// close the file:
+    velocidade.close();
+    Serial.println("done.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening velocidade.txt");
+  }
+  delay(10); // delay para estabilidade
 }
