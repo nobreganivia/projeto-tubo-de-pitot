@@ -53,10 +53,10 @@ void loop() {
       veloc = sqrt((10000.0*((adc_avg/1023.0)-0.5))/rho);
     }
   }
-  Serial.println("velocidade: ", veloc); // exibe velocidade 
+  Serial.println(veloc); // exibe velocidade 
   // if the file opened okay, write to it:
   if (velocidade) {
-    velocidade.println("velocidade: "veloc);
+    velocidade.println(veloc);
 	// close the file:
     velocidade.close();
     Serial.println("done.");
