@@ -14,6 +14,7 @@ int veloc_mean_size = 20;
 int zero_span = 2;
 
 // define e calcula deslocamento
+// inicializa cartão SD
 void setup() {
   Serial.begin(9600);
   Serial.print("Initializing SD card...");
@@ -53,16 +54,22 @@ void loop() {
       veloc = sqrt((10000.0*((adc_avg/1023.0)-0.5))/rho);
     }
   }
+  Serial.println("velocidade: ");
   Serial.println(veloc); // exibe velocidade 
-  // if the file opened okay, write to it:
+  Serial.println("m/s\n");
+	
+  // escreve as informações no arquivo:
   if (velocidade) {
+    velocidade.println("velocidade: ");
     velocidade.println(veloc);
-	// close the file:
+    velocidade.println("m/s\n");
+	// fecha o arquivo:
     velocidade.close();
     Serial.println("done.");
   } else {
-    // if the file didn't open, print an error:
-    Serial.println("error opening velocidade.txt");
+    // se o arquivo não abriu, mostrar um erro
+    Serial.println("erro ao abrir velocidade.txt");
   }
+	
   delay(10); // delay para estabilidade
 }
