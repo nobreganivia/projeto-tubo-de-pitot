@@ -26,8 +26,7 @@ void setup() {
   }
   Serial.println("initialization done.");
  
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
+  // abre o arquivo
   velocidade = SD.open("velocidade.txt", FILE_WRITE);
 
   for (int ii=0;ii<offset_size;ii++){
