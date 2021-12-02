@@ -62,8 +62,6 @@ void loop() {
     velocidade.println("velocidade: ");
     velocidade.println(veloc);
     velocidade.println("m/s\n");
-	// fecha o arquivo:
-    velocidade.close();
     Serial.println("done.");
   } else {
     // se o arquivo não abriu, mostrar um erro
